@@ -20,7 +20,7 @@ const G = createRequire(import.meta.url)(path.join(root, "data.js"));
 const PIN = "o_half:0/31000/0/0/0/0"; // 第1回の1問目（変わったら過去の日の問題が変わった印）
 // ---- 1. 問題の作り方（ブラウザを使わない）----
 // 生命保険料控除の表（ゲームとは別に書いた。data.js の deductOf と合うかを見る）
-// 出典：国税庁タックスアンサー No.1140（［令和8年4月1日現在法令等］。令和8年分以降の23歳未満の扶養親族の特例を含む。2026-11-17 に読んだ）
+// 出典：国税庁タックスアンサー No.1140（［令和8年4月1日現在法令等］。令和8年分の23歳未満の扶養親族の特例を含む。2026-11-17 に読んだ）
 // 表：[この額以下, 掛ける, 足す]。最後の行を超えると上限
 const QN = [[20000, 1, 0], [40000, 0.5, 10000], [80000, 0.25, 20000]], QO = [[25000, 1, 0], [50000, 0.5, 12500], [100000, 0.25, 25000]], QY = [[30000, 1, 0], [60000, 0.5, 15000], [120000, 0.25, 30000]];
 const tb = (T, top) => (x) => { for (const [hi, m, a] of T) if (x <= hi) return x * m + a; return top; };
@@ -131,6 +131,9 @@ check("好きなだけ遊べる：チケット・回数の上限・🔒で開く
 { const og = (k) => (html.match(new RegExp(`<meta (?:property|name)="${k}" content="([^"]+)"`)) || [])[1] || "";
   const png = readFileSync(path.join(root, "og.png"));
   check("SNS で貼ると絵と題が出る（OGP・1200×630・絶対URL）", og("og:title") && og("og:description") && og("og:image") === "https://satou-aaaaa.github.io/seiho-ikura/og.png" && og("twitter:card") === "summary_large_image" && png.readUInt32BE(16) === 1200 && png.readUInt32BE(20) === 630); }
+{ const mk = readFileSync(path.join(root, "tools/make-og.cjs"), "utf8"), t = ((mk.match(/color:#123554">([\s\S]*?)<span/) || [])[1] || "").replace(/<br>/g, ""), ti = (html.match(/<title>([^<]+)<\/title>/) || [])[1] || "";
+  check("og.png の絵の題（tools/make-og.cjs）がこのゲームの題と同じ（写し元の絵のまま出さない。seiho-ikura#1）", t.length > 1 && ti.includes(t + "いくら"), t + " / " + ti); }
+check("23歳未満の扶養親族の特例は令和8年分のこととだけ書く（「から」「以降」で先の年まで続くと読ませない。seiho-ikura#1）", !/令和8年分(から|以降)/.test(html + gen + readme));
 { const fy = readFileSync(path.join(root, ".github/ISSUE_TEMPLATE/feedback.yml"), "utf8");
   check("感想フォームの name が3字以上（2字だとフォームが出ない。shared-workflows incidents/2026-11-05-feedback-form-not-shown.md）", [...((fy.match(/^name:\s*(.+)$/m) || [])[1] || "").trim()].length >= 3);
   check("感想フォームは名前・メールを聞かない", /id: fun/.test(fy) && !/id: (name|email|mail)/.test(fy) && /labels: \["感想"\]/.test(fy)); }
